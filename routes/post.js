@@ -1,15 +1,29 @@
 const router = require("express").Router();
 const Post = require("../models/post");
 const User = require("../models/user");
+const {auth} = require('../middlewares/auth');
 
-router.post("/add", async (req, res) => {
-    const newPost = new Post(req.body);
-    try {
-        const savedPost = await newPost.save();
-        res.status(200).json(savedPost);
-    } catch (err) {
-        res.status(500).json(err);
-    }
+router.post("/add", auth, async(req, res) => {
+    User.findByToken(req.token, async(err, user) => {
+        req.body.userId = user._id;
+        const newPost = new Post(req.body);
+        try {
+            const savedPost = await newPost.save();
+            res.json(
+                {
+                    success: true,
+                    message: "Post Added Successfully"
+                }
+            );
+        } catch (err) {
+            res.status(500).json(
+                {
+                    success: false,
+                    message: err
+                }
+            );
+        }
+    });
 });
 
 router.put("/:id", async (req, res) => {
@@ -79,3 +93,5 @@ try {
     res.status(500).json(err);
 }
 });
+
+module.exports = router;

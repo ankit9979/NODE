@@ -88,7 +88,7 @@ router.delete('/delete', auth,  function(req,res) {
                         return res.json(
                             {
                                 success: true,
-                                message: "Account has been de22leted"
+                                message: "Account has been deleted"
                             })
                     }
                 });

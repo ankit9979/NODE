@@ -26,7 +26,7 @@ app.get('/',function(req,res){
 
 app.use("/api/auth", authRoute);
 app.use("/api/users", userRoute);
-// app.use("/api/posts", postRoute);
+app.use("/api/posts", postRoute);
 
 
 // listening port
