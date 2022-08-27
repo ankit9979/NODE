@@ -218,7 +218,7 @@ router.get("/view/:id", async (req, res) => {
 router.get("/myposts", auth,  async (req, res) => {
 try {
     User.findByToken(req.token, async(err, user) => {
-        const userPosts = await Post.find({ userId: user._id },  { createdAt: 0, updatedAt: 0, userId:0, likes:0 }).sort({ _id : -1});
+        const userPosts = await Post.find({ userId: user._id }).sort({ _id : -1});
         res.status(200).json(
             {
                 success: true,
