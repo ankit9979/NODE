@@ -7,12 +7,14 @@ const dotenv       = require("dotenv");
 const userRoute    = require("./routes/user");
 const authRoute    = require("./routes/auth");
 const postRoute    = require("./routes/post");
+const fileUpload   = require('express-fileupload');
 
 dotenv.config();
 
 app.use(bodyparser.urlencoded({extended : false}));
 app.use(bodyparser.json());
 app.use(cookieParser());
+app.use(fileUpload());
 
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology:true }, function(err) {

@@ -1,15 +1,69 @@
 const router = require("express").Router();
-const Post = require("../models/post");
-const User = require("../models/user");
+const Post   = require("../models/post");
+const User   = require("../models/user");
 const {auth} = require('../middlewares/auth');
+var fs       = require('fs');
 
 router.post("/add", auth, async(req, res) => {
     User.findByToken(req.token, async(err, user) => {
         req.body.userId = user._id;
+
+        let fileUpload, uploadPath;
+
+        if (!req.files || Object.keys(req.files).length === 0) {
+            res.status(400).json(
+                {
+                    success: false,
+                    message: "No files were uploaded."
+                })
+        }
+
+        fileUpload = req.files.post_img;
+
+        const allowedFiles = ['png', 'jpeg', 'jpg', 'gif'];
+        const allowedType  = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'];
+
+        const extension = fileUpload.name.slice(
+            ((fileUpload.name.lastIndexOf('.') - 1) >>> 0) + 2
+        );
+
+        if (!allowedFiles.includes(extension)) {
+            return res.json(
+                {
+                    success: false,
+                    message: "Invalid Image"
+                })
+        }
+
+        var dt = new Date();
+
+        var yearMonth = dt.getFullYear() + "/" + (dt.getMonth() + 1);
+
+        uploadPath = '../social-api/uploads/posts/'+ yearMonth;
+
+        if (!fs.existsSync(uploadPath)){
+            fs.mkdirSync(uploadPath, { recursive: true });
+        }
+
+        uploadPath = uploadPath + new Date().getTime() + '_' + fileUpload.name;
+
+        fileUpload.mv(uploadPath, function(err) {
+            if (err)
+                res.json(
+                    {
+                        success: false,
+                        message: "Something went wrong while upload post image."
+                    }
+            );
+        });
+
+        req.body.img = uploadPath;
+
         const newPost = new Post(req.body);
+
         try {
             const savedPost = await newPost.save();
-            res.json(
+            res.status(201).json(
                 {
                     success: true,
                     message: "Post Added Successfully"
@@ -26,34 +80,106 @@ router.post("/add", auth, async(req, res) => {
     });
 });
 
-router.put("/:id", async (req, res) => {
+router.put("/update/:id", async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
-        if (post.userId === req.body.userId) {
-        await post.updateOne({ $set: req.body });
-        res.status(200).json("the post has been updated");
+
+        if (post) {
+
+            if (req.files && Object.keys(req.files).length !== 0) {
+                let fileUpload, uploadPath;
+
+                var dt = new Date();
+
+                var yearMonth = dt.getFullYear() + "/" + (dt.getMonth() + 1);
+
+                fileUpload = req.files.post_img;
+                uploadPath = '../social-api/uploads/posts/'+ yearMonth;
+
+                const allowedFiles = ['png', 'jpeg', 'jpg', 'gif'];
+
+                const extension = fileUpload.name.slice(
+                    ((fileUpload.name.lastIndexOf('.') - 1) >>> 0) + 2
+                );
+
+                if (!allowedFiles.includes(extension)) {
+                    return res.json(
+                        {
+                            success: false,
+                            message: "Invalid Image"
+                        })
+                }
+
+                if (!fs.existsSync(uploadPath)){
+                    fs.mkdirSync(uploadPath, { recursive: true });
+                }
+
+                uploadPath = uploadPath + new Date().getTime() + '_' + fileUpload.name;
+
+                fileUpload.mv(uploadPath, function(err) {
+                    if (err)
+                        return res.json(
+                            {
+                                success: false,
+                                message: "Something went wrong while upload post image"
+                            }
+                    );
+                });
+
+                req.body.img = uploadPath;
+            }
+
+            await post.updateOne({ $set: req.body });
+            res.status(200).json(
+                {
+                    success: true,
+                    message: "The post has been updated"
+                }
+            );
         } else {
-        res.status(403).json("you can update only your post");
+            res.status(404).json(
+                {
+                    success: true,
+                    message: "No Post Found"
+                }
+            );
         }
     } catch (err) {
         res.status(500).json(err);
     }
 });
 
-router.delete("/:id", async (req, res) => {
-try {
-    const post = await Post.findById(req.params.id);
-    if (post.userId === req.body.userId) {
-    await post.deleteOne();
-    res.status(200).json("the post has been deleted");
-    } else {
-    res.status(403).json("you can delete only your post");
+router.delete("/delete/:id", async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+
+        if (post) {
+            await post.deleteOne();
+            res.status(200).json(
+                {
+                    success: true,
+                    message: "The post has been deleted"
+                }
+            );
+        } else {
+            res.status(404).json(
+                {
+                    success: false,
+                    message: "No post found"
+                }
+            );
+        }
+    } catch (err) {
+        res.status(500).json(
+            {
+                success: false,
+                message: err
+            }
+        );
     }
-} catch (err) {
-    res.status(500).json(err);
-}
 });
 
+/**
 router.put("/:id/like", async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -68,29 +194,46 @@ router.put("/:id/like", async (req, res) => {
         res.status(500).json(err);
     }
 });
-
-router.get("/:id", async (req, res) => {
-try {
-    const post = await Post.findById(req.params.id);
-    res.status(200).json(post);
-} catch (err) {
-    res.status(500).json(err);
-}
+ */
+router.get("/view/:id", async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.id);
+        res.status(200).json(
+            {
+                success: true,
+                data: post
+            }
+        );
+    } catch (err) {
+        res.status(500).json(
+            {
+                success: false,
+                message:err
+            }
+        );
+    }
 });
 
 
-router.get("/all", async (req, res) => {
+router.get("/myposts", auth,  async (req, res) => {
 try {
-    const currentUser = await User.findById(req.body.userId);
-    const userPosts = await Post.find({ userId: currentUser._id });
-    const friendPosts = await Promise.all(
-    currentUser.followings.map((friendId) => {
-        return Post.find({ userId: friendId });
-    })
-    );
-    res.json(userPosts.concat(...friendPosts))
+    User.findByToken(req.token, async(err, user) => {
+        const userPosts = await Post.find({ userId: user._id },  { createdAt: 0, updatedAt: 0, userId:0, likes:0 }).sort({ _id : -1});
+        res.status(200).json(
+            {
+                success: true,
+                data:userPosts
+            }
+        );
+    });
+
 } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json(
+        {
+            success: false,
+            message:err
+        }
+    );
 }
 });
 
