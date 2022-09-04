@@ -20,6 +20,7 @@ app.use(bodyparser.json());
 app.use(cookieParser());
 app.use(fileUpload());
 app.use(cors());
+app.use('/uploads', express.static('uploads'));
 
 mongoose.Promise = global.Promise;
 mongoose.connect(process.env.DATABASE, { useNewUrlParser: true, useUnifiedTopology:true }, function(err) {

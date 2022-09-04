@@ -3,6 +3,7 @@ const Post   = require("../models/post");
 const User   = require("../models/user");
 const {auth} = require('../middlewares/auth');
 var fs       = require('fs');
+const multer = require('multer');
 
 router.post("/add", auth, async(req, res) => {
     User.findByToken(req.token, async(err, user) => {
@@ -35,19 +36,16 @@ router.post("/add", auth, async(req, res) => {
                 })
         }
 
-        var dt = new Date();
-
-        var yearMonth = dt.getFullYear() + "/" + (dt.getMonth() + 1);
-
-        uploadPath = '../social-api/uploads/posts/'+ yearMonth;
+  
+        uploadPath = '../social-api/uploads/posts/';
 
         if (!fs.existsSync(uploadPath)){
             fs.mkdirSync(uploadPath, { recursive: true });
         }
 
-        uploadPath = uploadPath + new Date().getTime() + '_' + fileUpload.name;
+        filename = 'uploads/posts/' + new Date().getTime() + '_' + fileUpload.name;
 
-        fileUpload.mv(uploadPath, function(err) {
+        fileUpload.mv(filename, function(err) {
             if (err)
                 res.json(
                     {
@@ -57,7 +55,7 @@ router.post("/add", auth, async(req, res) => {
             );
         });
 
-        req.body.img = uploadPath;
+        req.body.img = filename;
 
         const newPost = new Post(req.body);
 
