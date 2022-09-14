@@ -66,7 +66,9 @@ router.post("/update", auth, (req, res) => {
         });
 
         req.body.profilePicture = filename;
-    }
+    } else {
+		delete req.body.profilePicture;
+	}
 
     User.findByToken(req.token, (err, user) => {
 
