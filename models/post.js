@@ -24,7 +24,6 @@ const PostSchema = new mongoose.Schema(
 PostSchema.methods.toJSON = function() {
     var obj = this.toObject();
     delete obj.userId;
-    delete obj.createdAt;
     delete obj.updatedAt;
     delete obj.likes;
     return obj;

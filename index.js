@@ -10,9 +10,6 @@ const postRoute    = require("./routes/post");
 const fileUpload   = require('express-fileupload');
 var cors = require('cors');
 
-
-
-
 dotenv.config();
 
 app.use(bodyparser.urlencoded({extended : false}));

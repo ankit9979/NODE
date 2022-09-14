@@ -11,12 +11,8 @@ let auth = (req, res, next) => {
     User.findByToken(token, (err, user) => {
         if(err) throw err;
 
-        if(!user)
-        {
-            return res.json({
-                success: false,
-                message: "Login Required"
-            });
+        if (!user) {
+            return res.json({ success: false, message: "Login Required"});
         }
 
         req.token = token;

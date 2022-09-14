@@ -8,12 +8,12 @@ router.get('/profile', auth, function(req, res) {
     res.json({
         success : true,
         data    : {
-            id   : req.user._id,
-            email: req.user.email,
-            name : req.user.firstname + " " + req.user.lastname,
-			firstname : req.user.firstname,
-			lastname : req.user.lastname,
-            profilePicture : req.user.profilePicture
+            id            : req.user._id,
+            email         : req.user.email,
+            name          : req.user.firstname + " " + req.user.lastname,
+            firstname     : req.user.firstname,
+            lastname      : req.user.lastname,
+            profilePicture: req.user.profilePicture
         }
     })
 });
