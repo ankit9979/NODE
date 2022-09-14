@@ -195,9 +195,9 @@ router.get("/myposts", auth,  async (req, res) => {
 
 
 router.get("/allposts", auth,  async (req, res) => {
-    try {
-            const posts = await Post.find().sort({ _id : -1});
 
+    try {
+            const posts = await Post.find().populate('userId',['firstname','lastname', 'profilePicture']).sort({ _id : -1});
             res.status(200).json(
                 {
                     success: true,

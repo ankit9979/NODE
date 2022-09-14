@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
-
+var Schema = mongoose.Schema;
 const PostSchema = new mongoose.Schema(
     {
         userId: {
-            type: String,
+            type: Schema.Types.ObjectId, ref: 'User',
             required: true,
         },
         description: {
@@ -21,11 +21,4 @@ const PostSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-PostSchema.methods.toJSON = function() {
-    var obj = this.toObject();
-    delete obj.userId;
-    delete obj.updatedAt;
-    delete obj.likes;
-    return obj;
-}
 module.exports = mongoose.model("Post", PostSchema);
